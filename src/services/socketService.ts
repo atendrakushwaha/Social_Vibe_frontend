@@ -17,7 +17,7 @@ class SocketService {
 
         console.log(`Initializing socket with token: ${token.substring(0, 10)}...`);
 
-        this.socket = io(`${SOCKET_URL}/chat`, {
+        this.socket = io(SOCKET_URL, {
             auth: {
                 token,
             },
