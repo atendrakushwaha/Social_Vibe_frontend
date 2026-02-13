@@ -24,12 +24,12 @@ export const postService = {
     },
 
     // Create post
-    createPost: async (data: CreatePostData): Promise<Post> => {
+    createPost: async (data: CreatePostData | FormData): Promise<Post> => {
         return api.post('/posts', data);
     },
 
     // Update post
-    updatePost: async (id: string, data: Partial<CreatePostData>): Promise<Post> => {
+    updatePost: async (id: string, data: Partial<CreatePostData> | FormData): Promise<Post> => {
         return api.patch(`/posts/${id}`, data);
     },
 

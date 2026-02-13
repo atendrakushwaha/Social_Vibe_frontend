@@ -2,10 +2,9 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { messageService } from '../services/messageService';
 import { userService } from '../services/userService'; // Import userService
-import { useAppSelector, useAppDispatch } from '../store/hooks'; // Added useAppDispatch
+import { useAppSelector } from '../store/hooks'; // Added useAppDispatch
 import type { Conversation, Message, User } from '../types'; // Import User type
 import { Avatar } from '../components/common/Avatar';
-import { Loading } from '../components/common/Loading';
 import { useCall } from '../context/CallContext';
 import { Button } from '../components/common/Button';
 import { format, isSameDay, isToday, isYesterday } from 'date-fns';
@@ -16,7 +15,6 @@ import toast from 'react-hot-toast';
 const Messages: React.FC = () => {
     const { conversationId } = useParams();
     const navigate = useNavigate();
-    const dispatch = useAppDispatch();
     const currentUser = useAppSelector(state => state.auth.user);
     const { makeCall } = useCall();
 

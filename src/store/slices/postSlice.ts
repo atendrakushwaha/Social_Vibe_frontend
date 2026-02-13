@@ -50,7 +50,7 @@ export const fetchFeed = createAsyncThunk(
 
 export const createPost = createAsyncThunk(
     'post/createPost',
-    async (data: CreatePostData, { rejectWithValue }) => {
+    async (data: CreatePostData | FormData, { rejectWithValue }) => {
         try {
             const post: Post = await postService.createPost(data);
             return post;

@@ -3,7 +3,7 @@ import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import { closeCreatePostModal } from '../../store/slices/uiSlice';
 import { createPost } from '../../store/slices/postSlice';
 import { Button } from '../common/Button';
-import { X, Image, MapPin, Smile } from 'lucide-react';
+import { X, Image, MapPin } from 'lucide-react';
 
 export const CreatePostModal: React.FC = () => {
     const dispatch = useAppDispatch();

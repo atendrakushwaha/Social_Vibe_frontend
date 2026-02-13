@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { storyService } from '../services/storyService';
 import { viewStory } from '../store/slices/storySlice';
@@ -6,7 +6,6 @@ import { useAppDispatch, useAppSelector } from '../store/hooks';
 import type { Story, User } from '../types';
 import { Loading } from '../components/common/Loading';
 import { Avatar } from '../components/common/Avatar';
-import { Button } from '../components/common/Button';
 import { formatDistanceToNow } from 'date-fns';
 
 const StoryViewer: React.FC = () => {
