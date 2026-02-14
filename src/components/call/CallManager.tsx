@@ -27,6 +27,8 @@ export const CallManager: React.FC = () => {
         React.useEffect(() => {
             if (videoRef.current && stream) {
                 videoRef.current.srcObject = stream;
+                // Ensure proper play even after remount
+                videoRef.current.play().catch(e => console.error("Local video play error", e));
             }
         }, [stream]);
         return <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover transform scale-x-[-1]" />;
@@ -37,6 +39,7 @@ export const CallManager: React.FC = () => {
         React.useEffect(() => {
             if (videoRef.current && stream) {
                 videoRef.current.srcObject = stream;
+                videoRef.current.play().catch(e => console.error("Remote video play error", e));
             }
         }, [stream]);
         return <video ref={videoRef} autoPlay playsInline className="w-full h-full object-cover" />;

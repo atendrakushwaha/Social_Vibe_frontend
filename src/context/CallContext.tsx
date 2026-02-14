@@ -223,7 +223,7 @@ export const CallProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         };
 
         const handleIceCandidate = async (data: any) => {
-            if (!data.candidate) return;
+            if (!data.candidate || data.callId !== callIdRef.current) return;
             const pc = peerConnectionRef.current;
 
             if (pc && pc.remoteDescription) {
@@ -264,10 +264,17 @@ export const CallProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
         const pc = createPeerConnection();
         const stream = await getMedia(type);
-        if (!stream) return; // Error handled in getMedia
+        if (!stream) {
+            // Handle cleanup if media access fails
+            endCall();
+            return;
+        }
 
         try {
-            const offer = await pc.createOffer();
+            const offer = await pc.createOffer({
+                offerToReceiveAudio: true,
+                offerToReceiveVideo: type === 'video'
+            });
             await pc.setLocalDescription(offer);
 
             socketService.initiateCall({
@@ -275,6 +282,17 @@ export const CallProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 callType: type,
                 signal: offer
             }, (response: any) => {
+                // RACE CONDITION FIX:
+                // If user clicked 'Cancel' (endCall) before this callback ran, callStateRef will be 'IDLE'.
+                // In that case, we must terminate the call on the server immediately so it doesn't keep ringing.
+                if (callStateRef.current !== 'OUTGOING') {
+                    console.log('Call cancelled before initiation completed. Cleaning up phantom call:', response?.callId);
+                    if (response?.success && response.callId) {
+                        socketService.endCall({ callId: response.callId });
+                    }
+                    return;
+                }
+
                 if (response?.success) {
                     console.log('Call initiated, ID:', response.callId);
                     callIdRef.current = response.callId;

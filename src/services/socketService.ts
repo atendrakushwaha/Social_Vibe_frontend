@@ -144,6 +144,14 @@ class SocketService {
 
     // Remove event listener
     off(event: string, callback?: Function): void {
+        // Remove from pending listeners first
+        if (this.pendingListeners.length > 0) {
+            this.pendingListeners = this.pendingListeners.filter(
+                p => !(p.event === event && (!callback || p.callback === callback))
+            );
+        }
+
+        // Remove from actual socket
         if (callback) {
             this.socket?.off(event, callback as any);
         } else {
