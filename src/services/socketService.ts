@@ -5,6 +5,7 @@ import { tokenUtils } from '../utils';
 class SocketService {
     private socket: Socket | null = null;
     private isConnected: boolean = false;
+    private pendingListeners: Array<{ event: string; callback: Function }> = [];
 
     connect(): void {
         if (this.socket && this.isConnected) return;
@@ -37,6 +38,15 @@ class SocketService {
             this.isConnected = false;
         });
 
+        // Attach pending listeners
+        if (this.pendingListeners.length > 0) {
+            console.log(`Attaching ${this.pendingListeners.length} pending listeners`);
+            this.pendingListeners.forEach(({ event, callback }) => {
+                this.socket?.on(event, callback as any);
+            });
+            this.pendingListeners = [];
+        }
+
         this.socket.on('connect_error', (error) => {
             console.error('Socket connection error:', error.message);
             this.isConnected = false;
@@ -63,7 +73,7 @@ class SocketService {
 
     // Message Events
     onNewMessage(callback: (data: { message: any; conversationId: string }) => void): void {
-        this.socket?.on(SOCKET_EVENTS.MESSAGE_NEW, callback);
+        this.on(SOCKET_EVENTS.MESSAGE_NEW, callback);
     }
 
     sendMessage(data: { conversationId: string; type: string; content?: string }, callback?: (response: any) => void): void {
@@ -88,7 +98,7 @@ class SocketService {
 
     // Notification Events
     onNewNotification(callback: (notification: any) => void): void {
-        this.socket?.on(SOCKET_EVENTS.NEW_NOTIFICATION, callback);
+        this.on(SOCKET_EVENTS.NEW_NOTIFICATION, callback);
     }
 
     onPostLiked(callback: (data: { postId: string; userId: string }) => void): void {
@@ -119,7 +129,12 @@ class SocketService {
 
     // Generic event listener
     on(event: string, callback: Function): void {
-        this.socket?.on(event, callback as any);
+        if (this.socket) {
+            this.socket.on(event, callback as any);
+        } else {
+            console.log(`Queueing listener for event: ${event}`);
+            this.pendingListeners.push({ event, callback });
+        }
     }
 
     // Generic event emitter
@@ -153,8 +168,8 @@ class SocketService {
     }
 
     // End active call
-    endCall(data: { callId: string }, callback?: (res: any) => void): void {
-        this.socket?.emit('call:end', data, callback);
+    endCall(data: { callId: string }): void {
+        this.emit('call:end', data);
     }
 
     // Send ICE candidate
@@ -169,27 +184,27 @@ class SocketService {
 
     // Listeners
     onIncomingCall(callback: (data: any) => void): void {
-        this.socket?.on('call:incoming', callback);
+        this.on('call:incoming', callback);
     }
 
     onCallAnswered(callback: (data: any) => void): void {
-        this.socket?.on('call:answered', callback);
+        this.on('call:answered', callback);
     }
 
     onCallRejected(callback: (data: any) => void): void {
-        this.socket?.on('call:rejected', callback);
+        this.on('call:rejected', callback);
     }
 
     onCallEnded(callback: (data: any) => void): void {
-        this.socket?.on('call:ended', callback);
+        this.on('call:ended', callback);
     }
 
     onIceCandidate(callback: (data: any) => void): void {
-        this.socket?.on('call:ice-candidate', callback);
+        this.on('call:ice-candidate', callback);
     }
 
     onMediaToggled(callback: (data: any) => void): void {
-        this.socket?.on('call:media-toggled', callback);
+        this.on('call:media-toggled', callback);
     }
 
     // Get connection status
