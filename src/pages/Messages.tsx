@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState, useRef, useCallback } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { messageService } from '../services/messageService';
 import { userService } from '../services/userService';
@@ -8,7 +8,7 @@ import type { Conversation, Message, User } from '../types';
 import { Avatar } from '../components/common/Avatar';
 import { useCall } from '../context/CallContext';
 import { Button } from '../components/common/Button';
-import { format, isSameDay, isToday, isYesterday } from 'date-fns';
+import { format, isSameDay } from 'date-fns';
 import socketService from '../services/socketService';
 import { SOCKET_EVENTS } from '../constants';
 import toast from 'react-hot-toast';
@@ -19,7 +19,6 @@ import {
     Info,
     Image as ImageIcon,
     Smile,
-    MoreVertical,
     ChevronLeft,
     Search,
     Edit

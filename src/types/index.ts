@@ -15,6 +15,7 @@ export interface User {
     role: 'user' | 'admin' | 'moderator';
     createdAt: string;
     updatedAt: string;
+    isOnline?: boolean;
 }
 
 export interface AuthResponse {
@@ -153,7 +154,7 @@ export interface Message {
     conversationId: string;
     senderId: string | User; // Can be populated
     content: string;
-    type: 'text' | 'image' | 'video' | 'voice';
+    type: 'text' | 'image' | 'video' | 'voice' | 'system';
     attachments?: any[];
     readBy?: Array<{ userId: string; readAt: string }>;
     createdAt: string;
@@ -166,7 +167,9 @@ export interface Conversation {
     participants: User[];
     lastMessage?: Message;
     unreadCount: number;
+    unreadCounts?: Record<string, number>;
     updatedAt: string;
+    lastMessageAt?: string;
 }
 
 export interface SendMessageData {
