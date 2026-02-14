@@ -65,14 +65,24 @@ export const CallManager: React.FC = () => {
     if (callState === 'OUTGOING') {
         return (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
-                <div className="bg-white dark:bg-dark-card p-6 rounded-2xl shadow-2xl flex flex-col items-center w-80">
+                {/* Local Preview Background */}
+                <div className="absolute inset-0 z-0">
+                    {localStream && callType === 'video' ? (
+                        <LocalVideo stream={localStream} />
+                    ) : (
+                        <div className="w-full h-full bg-gray-900" />
+                    )}
+                    <div className="absolute inset-0 bg-black/60" /> {/* Overlay to darken */}
+                </div>
+
+                <div className="relative z-10 bg-white/10 backdrop-blur-md p-6 rounded-2xl shadow-2xl flex flex-col items-center w-80 border border-white/20">
                     <div className="relative mb-4">
                         <Avatar src={remoteUser?.avatar} alt={remoteUser?.username} size="xl" />
                         <div className="absolute inset-0 rounded-full border-4 border-primary-500 animate-ping opacity-20"></div>
                     </div>
-                    <h3 className="text-xl font-bold dark:text-white mb-1">{remoteUser?.username}</h3>
-                    <p className="text-gray-500 mb-6">Calling...</p>
-                    <Button variant="ghost" className="w-full bg-red-100 text-red-600 hover:bg-red-200 rounded-full" onClick={endCall}>
+                    <h3 className="text-xl font-bold text-white mb-1">{remoteUser?.username}</h3>
+                    <p className="text-gray-300 mb-6">Calling...</p>
+                    <Button variant="ghost" className="w-full bg-red-500 text-white hover:bg-red-600 rounded-full" onClick={endCall}>
                         Cancel
                     </Button>
                 </div>
