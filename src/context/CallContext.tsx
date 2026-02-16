@@ -115,6 +115,7 @@ export const CallProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         // 1. Handle ICE Candidates
         pc.onicecandidate = (event) => {
             if (event.candidate) {
+                console.log('Generated ICE Candidate:', event.candidate.type, event.candidate.protocol);
                 if (callIdRef.current && remoteUser) {
                     socketService.sendIceCandidate({
                         callId: callIdRef.current,
@@ -385,6 +386,7 @@ export const CallProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         };
 
         const onIceCandidate = async (data: any) => {
+            console.log('Received ICE Candidate from remote');
             // data: { callId, candidate }
             // Verify call ID?
             // if (data.callId !== callIdRef.current) return; // Strict check
@@ -395,10 +397,12 @@ export const CallProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             if (pc && pc.remoteDescription) {
                 try {
                     await pc.addIceCandidate(candidate);
+                    console.log('Added ICE Candidate success');
                 } catch (e) {
                     console.error('Add Ice Error:', e);
                 }
             } else {
+                console.log('Queueing remote ICE candidate (no desc)');
                 pendingCandidatesRef.current.push(candidate);
             }
         };
