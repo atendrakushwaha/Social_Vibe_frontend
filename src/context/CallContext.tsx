@@ -57,6 +57,7 @@ export const CallProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const [callState, setCallState] = useState<CallState>('IDLE');
     const [callType, setCallType] = useState<CallType>('video');
     const [remoteUser, setRemoteUser] = useState<RemoteUser | null>(null);
+    const remoteUserRef = useRef<RemoteUser | null>(null); // Ref for callbacks
     const [localStream, setLocalStream] = useState<MediaStream | null>(null);
     const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
     const [isAudioEnabled, setIsAudioEnabled] = useState(true);
@@ -116,11 +117,11 @@ export const CallProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         pc.onicecandidate = (event) => {
             if (event.candidate) {
                 console.log('Generated ICE Candidate:', event.candidate.type, event.candidate.protocol);
-                if (callIdRef.current && remoteUser) {
+                if (callIdRef.current && remoteUserRef.current) {
                     socketService.sendIceCandidate({
                         callId: callIdRef.current,
                         candidate: event.candidate,
-                        to: remoteUser.id
+                        to: remoteUserRef.current.id
                     });
                 } else {
                     console.log('Queueing local candidate (no callId/remoteUser)');
@@ -177,6 +178,7 @@ export const CallProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setLocalStream(null);
         setRemoteStream(null);
         setRemoteUser(null);
+        remoteUserRef.current = null;
         setIsAudioEnabled(true);
         setIsVideoEnabled(true);
 
@@ -198,6 +200,7 @@ export const CallProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         }
 
         setRemoteUser({ id: userId, username: username || 'User', avatar });
+        remoteUserRef.current = { id: userId, username: username || 'User', avatar };
         setCallType(type);
         updateCallState('OUTGOING'); // Show UI immediately
 
@@ -357,7 +360,9 @@ export const CallProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
             console.log('Incoming Call:', data);
             callIdRef.current = data.callId;
-            setRemoteUser({ id: data.from, username: data.callerName || 'Caller' });
+            const caller = { id: data.from, username: data.callerName || 'Caller' };
+            setRemoteUser(caller);
+            remoteUserRef.current = caller;
             setCallType(data.callType);
             pendingOfferRef.current = data.signal;
             updateCallState('INCOMING');
