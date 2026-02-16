@@ -67,6 +67,7 @@ export const CallProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const localStreamRef = useRef<MediaStream | null>(null);
     const callIdRef = useRef<string | null>(null);
     const pendingCandidatesRef = useRef<RTCIceCandidate[]>([]);
+    const localCandidatesQueueRef = useRef<RTCIceCandidate[]>([]);
     const callStateRef = useRef<CallState>('IDLE');
 
     // Update state and ref
@@ -113,12 +114,17 @@ export const CallProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
         // 1. Handle ICE Candidates
         pc.onicecandidate = (event) => {
-            if (event.candidate && callIdRef.current && remoteUser) {
-                socketService.sendIceCandidate({
-                    callId: callIdRef.current,
-                    candidate: event.candidate,
-                    to: remoteUser.id
-                });
+            if (event.candidate) {
+                if (callIdRef.current && remoteUser) {
+                    socketService.sendIceCandidate({
+                        callId: callIdRef.current,
+                        candidate: event.candidate,
+                        to: remoteUser.id
+                    });
+                } else {
+                    console.log('Queueing local candidate (no callId/remoteUser)');
+                    localCandidatesQueueRef.current.push(event.candidate);
+                }
             }
         };
 
@@ -178,6 +184,7 @@ export const CallProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         localStreamRef.current = null;
         callIdRef.current = null;
         pendingCandidatesRef.current = [];
+        localCandidatesQueueRef.current = [];
     }, []);
 
     // --- Actions ---
@@ -225,7 +232,20 @@ export const CallProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
                 if (response?.success) {
                     callIdRef.current = response.callId;
-                    console.log('Call initiated, waiting for answer. ID:', response.callId);
+                    console.log('Call initiated. Flushing local candidates:', localCandidatesQueueRef.current.length);
+
+                    // Flush local candidates
+                    while (localCandidatesQueueRef.current.length > 0) {
+                        const candidate = localCandidatesQueueRef.current.shift();
+                        if (candidate) {
+                            socketService.sendIceCandidate({
+                                callId: response.callId,
+                                candidate: candidate,
+                                to: userId
+                            });
+                        }
+                    }
+
                 } else {
                     toast.error('Failed to connect call');
                     cleanup();
