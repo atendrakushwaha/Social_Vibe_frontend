@@ -146,6 +146,9 @@ export const CallProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         // 3. Connection State
         pc.onconnectionstatechange = () => {
             console.log('Connection State:', pc.connectionState);
+            if (pc.connectionState === 'connected') {
+                toast.success('Call Connected!');
+            }
             if (pc.connectionState === 'disconnected' || pc.connectionState === 'failed') {
                 toast.error('Connection lost');
                 cleanup();
