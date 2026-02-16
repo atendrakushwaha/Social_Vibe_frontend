@@ -300,6 +300,12 @@ export const CallProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             socketService.answerCall({
                 callId: callIdRef.current!,
                 signal: answer
+            }, (response: any) => {
+                if (!response?.success) {
+                    console.error('Answer Call Failed:', response?.error);
+                    toast.error('Failed to answer call');
+                    cleanup();
+                }
             });
 
         } catch (e) {

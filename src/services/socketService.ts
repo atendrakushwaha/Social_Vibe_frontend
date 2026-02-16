@@ -33,9 +33,14 @@ class SocketService {
             this.isConnected = true;
         });
 
-        this.socket.on(SOCKET_EVENTS.DISCONNECT, (reason) => {
+        this.socket?.on('disconnect', (reason) => {
             console.log('❌ Socket disconnected:', reason);
             this.isConnected = false;
+        });
+
+        // Debug: Log all incoming events
+        this.socket?.onAny((event, ...args) => {
+            console.log(`[Socket Debug] Received: ${event}`, args);
         });
 
         // Attach pending listeners
